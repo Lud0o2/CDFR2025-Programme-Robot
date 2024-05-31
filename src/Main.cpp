@@ -14,15 +14,15 @@ int main() {
     double x = 0, y= 0, teta= 0, dist = 10000;
 
     
-    if(!lidarSetup("/dev/ttyUSB0",256000)){
+    if(!lidarSetup("/dev/ttyUSB1",256000)){
         LOG_ERROR("cannot find the lidar");
     }
     position_t position = {x,y,teta,dist,0};
     sleep(4);
     for (int i = 0; i < 1; i++){
         getlidarData(lidarData,count);
-        convertAngularToAxial(lidarData, count, &position);
-        regression_lineaire(lidarData,count, x,y );
+        //convertAngularToAxial(lidarData, count, &position);
+        position_facile(lidarData,count, x,y );
         delay(500);
     }
 
