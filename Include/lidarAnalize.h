@@ -37,7 +37,7 @@ double distance_2_pts(double d1,double deg1, double d2, double deg2);
 
 void supprimerElement(element_decord**& array, int& rows, int index);
 
-void position_facile(lidarAnalize_t* data,int count, double X, double Y);
+void position_facile(lidarAnalize_t* data,int count, double *X, double* Y, double X_prec, double Y_prec);
 
 
 

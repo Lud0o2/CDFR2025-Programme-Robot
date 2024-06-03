@@ -1,6 +1,6 @@
 #include "../Include/lidarAnalize.h"
 #include <math.h>
-#define NB 8
+
 void convertAngularToAxial(lidarAnalize_t* data, int count, position_t *position){
     for(int i = 0; i< count; i++){
         if(data[i].valid){
@@ -271,66 +271,71 @@ void supprimerElement(element_decord**& array, int& rows, int index) {
         
 }
 
-void position_facile(lidarAnalize_t* data,int count, double X, double Y){
-    int angle_parfait[4];
+void position_facile(lidarAnalize_t* data,int count, double *X, double* Y, double X_prec, double Y_prec){
+    
+
     double X1,X2,Y1,Y2,a;
     double sommeX1=0, sommeX2=0, sommeY1=0, sommeY2=0;
-    int i_max=0, angle_index;
-    int l1,l2,L1,L2,l = 1990,L = 1915,nb = 0,m;
-    float alpha1, alpha2,min,ecart;
+    int i_max=0;
+    float angle_index;
+    int l1,l2,L1,L2,l = 2000,L = 3000,nb = 0,m;
+    double alpha1, alpha2,min,ecart;
     int offset= 0;
 
     for(int i = 0; i <count; i++){
         i_max ++;
     }
-    angle_index = i_max/4;
-    for (offset = 0; offset< count/4; offset += 1){
-        for (int num = 0;num < 4; num++){
-            min = 1000;
 
-            for (int i = 0; i < NB; i++){
-                //printf("\n angle = %f / %f / %f /%f",data[num*angle_index+i-6 + offset].angle);
-                ecart = fabs(data[num*angle_index+i-NB/2 + offset].angle - num*90- offset*90/angle_index);
-                if (ecart < min) { 
-                    min = ecart;
-                    if (num*angle_index+i-NB/2 + offset < 0) {angle_parfait[num] = 0;}
-                    angle_parfait[num] = num*angle_index+i-NB/2 + offset;             
-                }
-                
-            }
-        }
+    angle_index = float(i_max)/4;
+   
+    for (offset = 0; offset< angle_index; offset += 1){
 
-        printf("\n\n angle = %f / %f / %f / %f",data[angle_parfait[0]].angle - offset*90/angle_index,  data[angle_parfait[1]].angle-offset*90/angle_index ,  data[angle_parfait[2]].angle-offset*90/angle_index,  data[angle_parfait[3]].angle-offset*90/angle_index);
-        printf("\n dist = %f / %f / %F / %f", data[angle_parfait[0]].dist, data[angle_parfait[1]].dist, data[angle_parfait[2]].dist, data[angle_parfait[3]].dist);
-        printf("\n dist = %f / %f / %F / %f", data[angle_parfait[0]-1].dist, data[angle_parfait[1]-1].dist, data[angle_parfait[2]-1].dist, data[angle_parfait[3]-1].dist);
+        //printf("\n %i dist  = %f / %f, objectif = %f", data[2*angle_index  + offset].angle,data[2*angle_index  + offset +1].angle, float(offset)*90/angle_index);
         
-        l1 = data[angle_parfait[2]].dist; 
-        l2 = data[angle_parfait[0]].dist;
-        L1 = data[angle_parfait[3] ].dist; 
-        L2 = data[angle_parfait[1] ].dist; 
+        l1 = data[int(2*angle_index)  + offset].dist; 
+        l2 = data[int(0*angle_index)  + offset ].dist;
+        L1 = data[int(3*angle_index)  + offset].dist; 
+        L2 = data[int(1*angle_index)  + offset].dist; 
 
-        if (l1+l2 < L1+L2){m = l1;l1 = L1;L1 = m;
+        if (l1+l2 > L1+L2){m = l1;l1 = L1;L1 = m;
             m = l2;l2 = L2;L2 = m;}
 
-        alpha1 = float(l)/(l1+l2);
-        alpha2 = float(L)/(L1+L2);
-        
-        if (fabs(alpha1 - alpha2) < 0.01){ // peut surement encore être réduit 0.001
-            printf("\n alpha 1 = %f / alpha 2 = %f / diff = %f / l1 = %i / l2 = %i / L1 = %i / L2 = %i / ",alpha1,alpha2,fabs(alpha1 - alpha2), l1, l2, L1, L2);
-            a = (alpha1+alpha2)/2;
-            Y1 = l1*a;Y2 = l2*a;
-            X1 = L1*a;X2 = L2*a;
-            if (X1 > X2) { sommeX1+=X1; sommeX2+=X2;}
-            else {sommeX1+=X2; sommeX2+=X1;}
+        alpha1 = double(l)/(l1+l2);
+        alpha2 = double(L)/(L1+L2);
+        //printf("\n\n alpha 1 = %f / alpha 2 = %f / diff = %f / l1 = %i / l2 = %i / L1 = %i / L2 = %i / ",acos(alpha1)*180/M_PI-offset*90/angle_index,acos(alpha2)*180/M_PI -offset*90/angle_index,fabs(alpha1 - alpha2), l1, l2, L1, L2);
             
-            if (Y1 > Y2) { sommeY1+=Y1; sommeY2+=Y2;}
-            else {sommeY1+=Y2; sommeY2+=Y1;}
-            nb++;
-            printf("\n x1 = %f /x2 = %f / y1 = %f / y2 = %f / diff = %f et %f / nb = %i",X1,X2,Y1,Y2, l - fabs(Y1 + Y2), L- fabs(X1 + X2),nb );
-        }
-    }
-    printf("\n somme : x1 = %f /x2 = %f / y1 = %f / y2 = %f / diff = %f et %f / ",sommeX1/nb,sommeX2/nb,sommeY1/nb,sommeY2/nb, l - fabs(sommeY1/nb + sommeY2/nb), L- fabs(sommeX1/nb + sommeX2/nb) );
+        if (fabs(alpha1 - alpha2) < 0.005 && l1 != 0 && l2!= 0 && L1!=0 && L2!=0 && ( l - l1-l2 < 10) && (L-L1-L2 < 100)){
 
+            //printf("\n alpha 1 = %f / alpha 2 = %f / diff = %f / l1 = %i / l2 = %i / L1 = %i / L2 = %i / ",acos(alpha1)*180/M_PI-offset*90/angle_index,acos(alpha2)*180/M_PI -offset*90/angle_index,fabs(alpha1 - alpha2), l1, l2, L1, L2);
+            a = (alpha1+alpha2)/2;
+            if (L1 < L2) {X1 = L1*a;X2 = L2*a;}
+            else {X2 = L1*a;X1 = L2*a;}
+            if (l1<l2) {Y1 = l1*a;Y2 = l2*a;}
+            else {Y2 = l1*a;Y1 = l2*a;}
+         
+            
+            sommeX1+=X1; sommeX2+=X2;
+            sommeY1+=Y1; sommeY2+=Y2;
+            
+            nb++;
+            //printf("\n x1 = %f /x2 = %f / y1 = %f / y2 = %f / diff = %f et %f / nb = %i",X1,X2,Y1,Y2, L- fabs(X1 + X2),l - fabs(Y1 + Y2),nb );
+        }
+        
+    
+    }
+    X1 = sommeX1/nb;
+    X2 = sommeX2/nb;
+    Y1 = sommeY1/nb;
+    Y2 = sommeY2/nb;
+    printf("\n somme : x1 = %f /x2 = %f / y1 = %f / y2 = %f / diff = %f et %f \n",sommeX1/nb,sommeX2/nb,sommeY1/nb,sommeY2/nb, l - fabs(sommeY1/nb + sommeY2/nb), L- fabs(sommeX1/nb + sommeX2/nb));
+    if (X_prec ==0 && Y_prec == 0) {*X = X1; *Y = Y1;}
+        else {
+            if (fabs(Y_prec - X1) < fabs(X_prec - X2)) { *X = X2;}
+            else {*X = X1;}
+            if (fabs(Y_prec - Y1) < fabs(Y_prec - Y2)) { *Y = Y2;}
+            else {*Y = Y1;}
+        }
+    *X = X1; *Y = Y2;
 }
 
 
