@@ -39,6 +39,6 @@ void supprimerElement(element_decord**& array, int& rows, int index);
 
 void position_facile(lidarAnalize_t* data,int count, double *X, double* Y, double X_prec, double Y_prec);
 
-
+void position_ennemie(lidarAnalize_t* data, int count, position_t *position);
 
 

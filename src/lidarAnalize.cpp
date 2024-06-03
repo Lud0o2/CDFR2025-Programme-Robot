@@ -1,4 +1,4 @@
-#include "../Include/lidarAnalize.h"
+#include "lidarAnalize.h"
 #include <math.h>
 
 void convertAngularToAxial(lidarAnalize_t* data, int count, position_t *position){
@@ -245,6 +245,7 @@ void pixelArtPrint(lidarAnalize_t* data, int count,int sizeX,int sizeY,int scale
     free(matriceAffichage);
 
 }
+
 void supprimerElement(element_decord**& array, int& rows, int index) {
     if (index < 0 || index >= rows) {
         printf("\n ERREUR INDEX SupprimerElement");
@@ -279,7 +280,7 @@ void position_facile(lidarAnalize_t* data,int count, double *X, double* Y, doubl
     int i_max=0;
     float angle_index;
     int l1,l2,L1,L2,l = 2000,L = 3000,nb = 0,m;
-    double alpha1, alpha2,min,ecart;
+    double alpha1, alpha2;
     int offset= 0;
 
     for(int i = 0; i <count; i++){
@@ -328,14 +329,7 @@ void position_facile(lidarAnalize_t* data,int count, double *X, double* Y, doubl
     Y1 = sommeY1/nb;
     Y2 = sommeY2/nb;
     printf("\n somme : x1 = %f /x2 = %f / y1 = %f / y2 = %f / diff = %f et %f \n",sommeX1/nb,sommeX2/nb,sommeY1/nb,sommeY2/nb, l - fabs(sommeY1/nb + sommeY2/nb), L- fabs(sommeX1/nb + sommeX2/nb));
-    if (X_prec ==0 && Y_prec == 0) {*X = X1; *Y = Y1;}
-        else {
-            if (fabs(Y_prec - X1) < fabs(X_prec - X2)) { *X = X2;}
-            else {*X = X1;}
-            if (fabs(Y_prec - Y1) < fabs(Y_prec - Y2)) { *Y = Y2;}
-            else {*Y = Y1;}
-        }
-    *X = X1; *Y = Y2;
+    *X = X1; *Y = Y1;
 }
 
 
@@ -348,14 +342,13 @@ double distance_2_pts(double d1,double deg1, double d2, double deg2){
     return d3;
 }
 
-void init_position_sol(lidarAnalize_t* data, int count, position_t *position){
+void position_ennemie(lidarAnalize_t* data, int count, position_t *position){
     double distance;
-    double d1,d2, deg1,deg2,deg3;
-    int rows = 100; // Nombre de lignes
+    double d1,d2, deg1,deg2;
+    int rows = 20; // Nombre de lignes
     int next_valid; //permet de trouver le prochain élément valide
     int ligne =0;
     double somme_angle = 0, somme_dist = 0, nb=0;
-    
 
     
     // Allocation dynamique du tableau
@@ -368,16 +361,13 @@ void init_position_sol(lidarAnalize_t* data, int count, position_t *position){
     }
 
     //fragmente le décord en plusieurs éléments proches
-    
     for(int i = 0; i <count; i++){
-        //reboucle à l'angle 0 pour pas couper les balises
+
         distance = data[i].dist;
 
-        //if (position->dist < 100) {convertAngularToAxial(data, count, position);}
         if(data[i].valid && distance < 4000){
             somme_dist += distance; nb ++;
             somme_angle += data[i].angle;
-
             next_valid = 1;
 
             while ((!data[i+next_valid].valid) && ((i+next_valid) <count)) {next_valid++;}
@@ -399,19 +389,19 @@ void init_position_sol(lidarAnalize_t* data, int count, position_t *position){
     while (array[rows-1]->moy_dist == 0){
         supprimerElement(array, rows, rows -1);}
     
-    // suppression si nb <  5 et largeur < 20cm b
+    // suppression si nb <  5 et largeur < 2cm 
     for (int i= 0; i< rows; i++){
         
-        while (array[rows -1    - i]->nb < 5 || array[rows -1 - i]->cm <200){
+        while (array[rows -1    - i]->nb < 5 || array[rows -1 - i]->cm <20){
             supprimerElement(array, rows, rows -1 -i); 
             if (rows -1 -i < 0){break;}
         
         }}
 
-
     // Affichage pour vérifier la valeur
     for (int l = 0; l < rows; ++l) {
         printf("\n Rows = %i / Angle = %f / Dist = %f / n = %i / i = %i / mm = %f ",l, array[l]->moy_angle,array[l]->moy_dist, array[l]->nb, array[l]->i, array[l]->cm); 
     }
+    
 }
 
