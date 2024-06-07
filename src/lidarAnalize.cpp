@@ -1,20 +1,31 @@
 #include "lidarAnalize.h"
 #include <math.h>
 
-void convertAngularToAxial(lidarAnalize_t* data, int count, position_t *position){
+void convertAngularToAxial_balise(lidarAnalize_t* data, int count, position_t *position){
     for(int i = 0; i< count; i++){
         if(data[i].valid){
             data[i].x = data[i].dist*cos((data[i].angle+ position->teta)*DEG_TO_RAD) + position->x;
             data[i].y = -data[i].dist*sin((data[i].angle+position->teta)*DEG_TO_RAD) + position->y;
             //get table valid
             if(data[i].x<1100 && data[i].x>-1100 && data[i].y<1700 && data[i].y>-1700){
-                printf("\nx = %i / y = %i / in ? = %i",data[i].x, data[i].y, data[i].x<1100 && data[i].x>-1100 && data[i].y<1700 && data[i].y>-1700);
+                //printf("\nx = %i / y = %i / in ? = %i",data[i].x, data[i].y, data[i].x<1100 && data[i].x>-1100 && data[i].y<1700 && data[i].y>-1700);
                 data[i].onTable = true;}
             else{data[i].onTable = false;}
-            
         }
     }
-    
+}
+
+void convertAngularToAxial_ennemie(lidarAnalize_t* data, int count, position_t *position){
+    for(int i = 0; i< count; i++){
+        if(data[i].valid){
+            data[i].x = data[i].dist*cos((data[i].angle+ position->teta)*DEG_TO_RAD) + position->x;
+            data[i].y = -data[i].dist*sin((data[i].angle+position->teta)*DEG_TO_RAD) + position->y;
+            //get table valid
+            if(data[i].x<900 && data[i].x>-900 && data[i].y<1400 && data[i].y>-1400){
+                data[i].onTable = true;}
+            else{data[i].onTable = false;}
+        }
+    }
 }
 
 void printLidarAxial(lidarAnalize_t* data, int count){
@@ -332,7 +343,6 @@ void position_facile(lidarAnalize_t* data,int count, double *X, double* Y, doubl
 }
 
 
-
 double distance_2_pts(double d1,double deg1, double d2, double deg2){
     double alpha;
     double d3;
@@ -341,10 +351,10 @@ double distance_2_pts(double d1,double deg1, double d2, double deg2){
     return d3;
 }
 
-void position_ennemie(lidarAnalize_t* data, int count, position_t *position){
+void position_balise_ennemie(lidarAnalize_t* data, int count, position_t *position){
     double distance;
-    double d1,d2, deg1,deg2;
-    int rows = 20; // Nombre de lignes
+    double d1,d2, deg1,deg2,deg3;
+    int rows = 200; // Nombre de lignes
     int next_valid; //permet de trouver le prochain élément valide
     int ligne =0;
     double somme_angle = 0, somme_dist = 0, nb=0;
@@ -361,9 +371,7 @@ void position_ennemie(lidarAnalize_t* data, int count, position_t *position){
     
     //fragmente le décord en plusieurs éléments proches
     for(int i = 0; i <count; i++){
-
         distance = data[i].dist;
-
         if(data[i].onTable){
             somme_dist += distance; nb ++;
             somme_angle += data[i].angle;
@@ -390,8 +398,7 @@ void position_ennemie(lidarAnalize_t* data, int count, position_t *position){
     
     // suppression si nb <  5 et largeur < 2cm 
     for (int i= 0; i< rows; i++){
-        
-        while (array[rows -1    - i]->nb < 5 || array[rows -1 - i]->cm <20){
+        while (array[rows -1 - i]->nb < 5 || array[rows -1 - i]->cm <20){
             supprimerElement(array, rows, rows -1 -i); 
             if (rows -1 -i < 0){break;}
         
@@ -401,6 +408,65 @@ void position_ennemie(lidarAnalize_t* data, int count, position_t *position){
     for (int l = 0; l < rows; ++l) {
         printf("\n Rows = %i / Angle = %f / Dist = %f / n = %i / i = %i / mm = %f ",l, array[l]->moy_angle,array[l]->moy_dist, array[l]->nb, array[l]->i, array[l]->cm); 
     }
-    
+
+    // donne poto 1 et 2
+    double d_1_2 , d_2_3 , d_3_1;
+    int index_poto1, index_poto2, index_poto3,index_ennemie; //poto 1 = gauche haut, poto 2 = gauche bas, poto 3 = droite
+    float poto_1_2, poto_2_3, poto_3_1, d_tot = 10000;
+    poto_1_2 = 1900.0;
+    poto_2_3 = 3340.0; 
+    poto_3_1 = 3340.0; 
+    printf("\nROWS = %i",rows);
+
+    if (rows == 4){printf("\n 3 Balise et 1 ennemie trouvé");
+        for (int i= 0; i< rows; i++){
+            for (int j= 0; j< rows; j++){
+                for (int k=0; k<rows; k++){
+                    if (i!=j && i!=k && j!= k){ 
+                        d_1_2 = distance_2_pts(array[i]->moy_dist, array[i]->moy_angle, array[j]->moy_dist, array[j]->moy_angle);
+                        d_2_3 = distance_2_pts(array[j]->moy_dist, array[j]->moy_angle, array[k]->moy_dist, array[k]->moy_angle);
+                        d_3_1 = distance_2_pts(array[k]->moy_dist, array[k]->moy_angle, array[i]->moy_dist, array[i]->moy_angle);
+                        distance = fabs(d_1_2-poto_1_2) + fabs(d_2_3-poto_2_3) + fabs(d_3_1-poto_3_1);
+                        //printf("\n d_1_2 = %f / d_2_3 =  %f / d_3_1 = %f / distance = %f", d_1_2 , d_2_3 , d_3_1, distance);
+                        if (distance< d_tot) {
+                            d_tot = distance;
+                            index_poto1 = i;
+                            index_poto2 = j;
+                            index_poto3 = k;
+                        }
+                    }
+                }
+            }
+        }
+        for (int i=0; i<rows;i++){
+            if (i!= index_poto1 && i!= index_poto2 &&i!= index_poto3){index_ennemie = i;}
+        }
+        printf("\n ennemie : dist = %i / angle = %f",array[index_ennemie]->moy_dist,array[index_ennemie]->moy_angle);
+
+        //printf("\n distance = %f", array[index_poto2]->moy_dist);
+        d_1_2 = distance_2_pts(array[index_poto1]->moy_dist, array[index_poto1]->moy_angle, array[index_poto2]->moy_dist, array[index_poto2]->moy_angle);
+        d_2_3 = distance_2_pts(array[index_poto2]->moy_dist, array[index_poto2]->moy_angle, array[index_poto3]->moy_dist, array[index_poto3]->moy_angle);
+        d_3_1 = distance_2_pts(array[index_poto3]->moy_dist, array[index_poto3]->moy_angle, array[index_poto1]->moy_dist, array[index_poto1]->moy_angle);
+        distance = fabs(d_1_2-poto_1_2) + fabs(d_2_3-poto_2_3) + fabs(d_3_1-poto_3_1);
+        //printf("\n d_1_2 = %f / d_2_3 =  %f / d_3_1 = %f / distance = %f", d_1_2 , d_2_3 , d_3_1, distance);
+        // vérification bon arrangement poteaux
+        deg1 = array[index_poto1]->moy_angle;
+        deg2 = array[index_poto2]->moy_angle;
+        deg3 = array[index_poto3]->moy_angle;
+        if ((deg1 < deg3 && deg3< deg2) or (deg3 < deg2 && deg2 < deg1)or (deg2<deg1&& deg1<deg3));
+        else {
+            int temp = index_poto1;
+            index_poto1 = index_poto2;
+            index_poto2 = temp;
+        }
+
+        //determination centre 3 cercles
+        //printf("\nD_2_M = %f / poto 1 = %i / poto 2 = %i / poto 3 = %i / d_1_2 = %f / d_2_3 = %f / d_3_1 = %f / distance = %f", array[index_poto2]->moy_dist, index_poto1, index_poto2, index_poto3, d_1_2, d_2_3, d_3_1, distance);
+        sol_eq_2cercle(0,d_1_2,array[index_poto1]->moy_dist, 0,0, array[index_poto2]->moy_dist, sqrt(d_2_3*d_2_3 - d_1_2*d_1_2/4), d_1_2/2, array[index_poto3]->moy_dist, &position->x,&position->y);
+        position->dist = array[index_poto2]->moy_dist;
+        printf("\n distance = %f", distance);
+        position->teta = 270 - atan(position->y/position->x)*180/M_PI - array[index_poto2]->moy_angle;
+        if (position->teta < 0){ position->teta += 360;}
+    }
 }
 

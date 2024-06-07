@@ -19,7 +19,9 @@ typedef struct {
 } element_decord;
 
 
-void convertAngularToAxial(lidarAnalize_t* data, int count, position_t *position);
+void convertAngularToAxial_balise(lidarAnalize_t* data, int count, position_t *position);
+
+void convertAngularToAxial_ennemie(lidarAnalize_t* data, int count, position_t *position);
 
 bool collideFordward(lidarAnalize_t* data, int count);
 
@@ -39,6 +41,7 @@ void supprimerElement(element_decord**& array, int& rows, int index);
 
 void position_facile(lidarAnalize_t* data,int count, double *X, double* Y, double X_prec, double Y_prec);
 
-void position_ennemie(lidarAnalize_t* data, int count, position_t *position);
+void position_balise_ennemie(lidarAnalize_t* data, int count, position_t *position);
+
 
 
