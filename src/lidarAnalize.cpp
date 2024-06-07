@@ -6,13 +6,12 @@ void convertAngularToAxial(lidarAnalize_t* data, int count, position_t *position
         if(data[i].valid){
             data[i].x = data[i].dist*cos((data[i].angle+ position->teta)*DEG_TO_RAD) + position->x;
             data[i].y = -data[i].dist*sin((data[i].angle+position->teta)*DEG_TO_RAD) + position->y;
-            /*
             //get table valid
-            if(data[i].x<1800 && data[i].x>-100 && data[i].y<2900 && data[i].y>-50)
-                data[i].onTable = true;
-            else
-                data[i].onTable = false;
-            */
+            if(data[i].x<1100 && data[i].x>-1100 && data[i].y<1700 && data[i].y>-1700){
+                printf("\nx = %i / y = %i / in ? = %i",data[i].x, data[i].y, data[i].x<1100 && data[i].x>-1100 && data[i].y<1700 && data[i].y>-1700);
+                data[i].onTable = true;}
+            else{data[i].onTable = false;}
+            
         }
     }
     
@@ -359,20 +358,20 @@ void position_ennemie(lidarAnalize_t* data, int count, position_t *position){
         array[i]->nb = 0;array[i]->moy_dist = 0;
         array[i]->nb = 0; array[i]->i = 0;  
     }
-
+    
     //fragmente le décord en plusieurs éléments proches
     for(int i = 0; i <count; i++){
 
         distance = data[i].dist;
 
-        if(data[i].valid && distance < 4000){
+        if(data[i].onTable){
             somme_dist += distance; nb ++;
             somme_angle += data[i].angle;
             next_valid = 1;
 
-            while ((!data[i+next_valid].valid) && ((i+next_valid) <count)) {next_valid++;}
-            printf("\n distance = %f / angle = %f", data[i].dist - data[i + next_valid].dist, data[i].angle);
-            if (fabs(distance- data[i+next_valid].dist) > 50){   // changement d'élément de décord, séparation si écart > 20cm
+            while ((!data[i+next_valid].onTable) && ((i+next_valid) <count)) {next_valid++;}
+            //printf("\n distance = %f / angle = %f", data[i].dist - data[i + next_valid].dist, data[i].angle);
+            if (fabs(distance- data[i+next_valid].dist) > 100){   // changement d'élément de décord, séparation si écart > 10cm
                 d1 = data[i].dist;
                 d2 = somme_dist/nb;
                 deg1 = data[i].angle;
@@ -384,7 +383,7 @@ void position_ennemie(lidarAnalize_t* data, int count, position_t *position){
             }
         }
     }
-
+    
     //supprime le fin du tableau
     while (array[rows-1]->moy_dist == 0){
         supprimerElement(array, rows, rows -1);}

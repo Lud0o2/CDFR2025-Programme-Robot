@@ -15,16 +15,18 @@ int main() {
     double x_prec = 0,y_prec = 0;
     
     if(!lidarSetup("/dev/ttyUSB0",256000)){LOG_ERROR("cannot find the lidar");}
-    
+    gpioSetPWMfrequency(18, 40000);
+    gpioSetMode(18, PI_OUTPUT);
+    gpioSetPWMrange(18, 100);
+    gpioPWM(18, 50);//lidar speed
     position_t position = {x,y,teta,dist,0};
     sleep(4);
-    for (int i = 0; i < 4; i++){
+    for (int i = 0; i < 1; i++){
         getlidarData(lidarData,count);
-        //convertAngularToAxial(lidarData, count, &position);
-        position_facile(lidarData,count, &x,&y ,x_prec, y_prec);
+        convertAngularToAxial(lidarData, count, &position);
+        position_ennemie(lidarData,count, &position);
         //printf("\nx = %f / y = %f / x_prec = %f / y_prec = %f \n",x,y, x_prec, y_prec);
-        x_prec = x;
-        y_prec = y;
+
         
         delay(500);
     }
