@@ -41,7 +41,7 @@ void sol_eq_2cercle(double xA,double  yA,double AM,double xB,double yB,double BM
 
 void position_facile(lidarAnalize_t* data,int count, double *X, double* Y, double X_prec, double Y_prec);
 
-void position_balise_ennemie(lidarAnalize_t* data, int count, position_t *position);
+void init_position_balise(lidarAnalize_t* data, int count, position_t *position, position_t *position_ennemie);
 
 
 

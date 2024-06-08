@@ -14,7 +14,7 @@ int main() {
     double x = 0, y= 0, teta= 0, dist = 10000;
     double x_prec = 0,y_prec = 0;
     
-    if(!lidarSetup("/dev/ttyUSB1",256000)){LOG_ERROR("cannot find the lidar");}
+    if(!lidarSetup("/dev/ttyUSB0",256000)){LOG_ERROR("cannot find the lidar");}
     /*
     if (gpioInitialise() < 0) {LOG_ERROR("cannot initialize lidar gpio speed");return 1;}
     gpioSetPWMfrequency(18, 40000);
@@ -23,13 +23,14 @@ int main() {
     gpioPWM(18, 50);//lidar speed
     */
     position_t position = {x,y,teta,dist,0};
+    position_t position_ennemie;
     sleep(4);
     for (int i = 0; i < 1; i++){
         getlidarData(lidarData,count);
         convertAngularToAxial(lidarData, count, &position);
-        position_balise_ennemie(lidarData,count, &position);
-        //printf("\nx = %f / y = %f / x_prec = %f / y_prec = %f \n",x,y, x_prec, y_prec);
-
+        init_position_balise(lidarData,count, &position, &position_ennemie);
+        printf("\nx = %f / y = %f / teta = %f",position.x,position.y,position.teta);
+        printf("\n x_ennemie = %f / y_ennemie = %f",position_ennemie.x,position_ennemie.y);
         
         delay(500);
     }
