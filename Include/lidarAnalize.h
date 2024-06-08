@@ -19,9 +19,7 @@ typedef struct {
 } element_decord;
 
 
-void convertAngularToAxial_balise(lidarAnalize_t* data, int count, position_t *position);
-
-void convertAngularToAxial_ennemie(lidarAnalize_t* data, int count, position_t *position);
+void convertAngularToAxial(lidarAnalize_t* data, int count, position_t *position);
 
 bool collideFordward(lidarAnalize_t* data, int count);
 
@@ -38,6 +36,8 @@ void pixelArtPrint(lidarAnalize_t* data, int count,int sizeX,int sizeY,int scale
 double distance_2_pts(double d1,double deg1, double d2, double deg2);
 
 void supprimerElement(element_decord**& array, int& rows, int index);
+
+void sol_eq_2cercle(double xA,double  yA,double AM,double xB,double yB,double BM,double xC, double yC, double CM, double *xM, double *yM);
 
 void position_facile(lidarAnalize_t* data,int count, double *X, double* Y, double X_prec, double Y_prec);
 

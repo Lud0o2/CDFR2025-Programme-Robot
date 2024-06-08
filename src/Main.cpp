@@ -27,7 +27,7 @@ int main() {
     for (int i = 0; i < 1; i++){
         getlidarData(lidarData,count);
         convertAngularToAxial(lidarData, count, &position);
-        position_ennemie(lidarData,count, &position);
+        position_balise_ennemie(lidarData,count, &position);
         //printf("\nx = %f / y = %f / x_prec = %f / y_prec = %f \n",x,y, x_prec, y_prec);
 
         

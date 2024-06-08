@@ -1,7 +1,7 @@
 #include "lidarAnalize.h"
 #include <math.h>
 
-void convertAngularToAxial_balise(lidarAnalize_t* data, int count, position_t *position){
+void convertAngularToAxial(lidarAnalize_t* data, int count, position_t *position){
     for(int i = 0; i< count; i++){
         if(data[i].valid){
             data[i].x = data[i].dist*cos((data[i].angle+ position->teta)*DEG_TO_RAD) + position->x;
@@ -9,19 +9,6 @@ void convertAngularToAxial_balise(lidarAnalize_t* data, int count, position_t *p
             //get table valid
             if(data[i].x<1100 && data[i].x>-1100 && data[i].y<1700 && data[i].y>-1700){
                 //printf("\nx = %i / y = %i / in ? = %i",data[i].x, data[i].y, data[i].x<1100 && data[i].x>-1100 && data[i].y<1700 && data[i].y>-1700);
-                data[i].onTable = true;}
-            else{data[i].onTable = false;}
-        }
-    }
-}
-
-void convertAngularToAxial_ennemie(lidarAnalize_t* data, int count, position_t *position){
-    for(int i = 0; i< count; i++){
-        if(data[i].valid){
-            data[i].x = data[i].dist*cos((data[i].angle+ position->teta)*DEG_TO_RAD) + position->x;
-            data[i].y = -data[i].dist*sin((data[i].angle+position->teta)*DEG_TO_RAD) + position->y;
-            //get table valid
-            if(data[i].x<900 && data[i].x>-900 && data[i].y<1400 && data[i].y>-1400){
                 data[i].onTable = true;}
             else{data[i].onTable = false;}
         }
@@ -351,6 +338,24 @@ double distance_2_pts(double d1,double deg1, double d2, double deg2){
     return d3;
 }
 
+void sol_eq_2cercle(double xA,double  yA,double AM,double xB,double yB,double BM,double xC, double yC, double CM, double *xM, double *yM){
+    double C,D,E,F;
+    //cercle A-C
+    E = (yA-yC)/(xC-xA);
+    F = (xC*xC + yC*yC + AM*AM - CM*CM - xA*xA - yA*yA)/(2*(xC-xA));
+    //cercle A-B
+    if (xB-xA == 0){
+        *yM = (xB*xB + yB*yB + AM*AM - BM*BM - xA*xA - yA*yA)/(2*(yB-yA));
+        *xM = *yM*E + F;}
+    else{
+        C = (yA-yB)/(xB-xA);
+        D = (xB*xB + yB*yB + AM*AM - BM*BM - xA*xA - yA*yA)/(2*(xB-xA));       
+        *yM = (F-D)/(C-E);
+        *xM = *yM*C + D;
+    }
+    //printf("\nxM = %f / yM = %f / dist = %f\n",xM,yM, sqrt(xM*xM + yM*yM));
+}
+
 void position_balise_ennemie(lidarAnalize_t* data, int count, position_t *position){
     double distance;
     double d1,d2, deg1,deg2,deg3;
@@ -411,7 +416,7 @@ void position_balise_ennemie(lidarAnalize_t* data, int count, position_t *positi
 
     // donne poto 1 et 2
     double d_1_2 , d_2_3 , d_3_1;
-    int index_poto1, index_poto2, index_poto3,index_ennemie; //poto 1 = gauche haut, poto 2 = gauche bas, poto 3 = droite
+    int index_poto1, index_poto2, index_poto3,index_ennemie = -1; //poto 1 = gauche haut, poto 2 = gauche bas, poto 3 = droite
     float poto_1_2, poto_2_3, poto_3_1, d_tot = 10000;
     poto_1_2 = 1900.0;
     poto_2_3 = 3340.0; 
@@ -430,9 +435,7 @@ void position_balise_ennemie(lidarAnalize_t* data, int count, position_t *positi
                         //printf("\n d_1_2 = %f / d_2_3 =  %f / d_3_1 = %f / distance = %f", d_1_2 , d_2_3 , d_3_1, distance);
                         if (distance< d_tot) {
                             d_tot = distance;
-                            index_poto1 = i;
-                            index_poto2 = j;
-                            index_poto3 = k;
+                            index_poto1 = i; index_poto2 = j; index_poto3 = k;
                         }
                     }
                 }
@@ -441,7 +444,7 @@ void position_balise_ennemie(lidarAnalize_t* data, int count, position_t *positi
         for (int i=0; i<rows;i++){
             if (i!= index_poto1 && i!= index_poto2 &&i!= index_poto3){index_ennemie = i;}
         }
-        printf("\n ennemie : dist = %i / angle = %f",array[index_ennemie]->moy_dist,array[index_ennemie]->moy_angle);
+        printf("\n ennemie : dist = %f / angle = %f",array[index_ennemie]->moy_dist,array[index_ennemie]->moy_angle);
 
         //printf("\n distance = %f", array[index_poto2]->moy_dist);
         d_1_2 = distance_2_pts(array[index_poto1]->moy_dist, array[index_poto1]->moy_angle, array[index_poto2]->moy_dist, array[index_poto2]->moy_angle);
