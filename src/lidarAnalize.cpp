@@ -456,7 +456,7 @@ void position_balise_ennemie(lidarAnalize_t* data, int count, position_t *positi
         deg1 = array[index_poto1]->moy_angle;
         deg2 = array[index_poto2]->moy_angle;
         deg3 = array[index_poto3]->moy_angle;
-        if ((deg1 < deg3 && deg3< deg2) or (deg3 < deg2 && deg2 < deg1)or (deg2<deg1&& deg1<deg3));
+        if ((deg1 < deg3 && deg3< deg2) || (deg3 < deg2 && deg2 < deg1)|| (deg2<deg1&& deg1<deg3));
         else {
             int temp = index_poto1;
             index_poto1 = index_poto2;
