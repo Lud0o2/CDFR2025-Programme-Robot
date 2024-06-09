@@ -12,7 +12,6 @@ int count = SIZEDATALIDAR;
 
 int main() {
     double x = 0, y= 0, teta= 0, dist = 10000;
-    double x_prec = 0,y_prec = 0;
     
     if(!lidarSetup("/dev/ttyUSB0",256000)){LOG_ERROR("cannot find the lidar");}
     /*
@@ -25,14 +24,17 @@ int main() {
     position_t position = {x,y,teta,dist,0};
     position_t position_ennemie;
     sleep(4);
-    for (int i = 0; i < 1; i++){
+    for (int i = 0; i < 100; i++){
+        position = {x,y,teta,dist,0};
+        position_ennemie = {x,y,teta,dist,0};
         getlidarData(lidarData,count);
-        convertAngularToAxial(lidarData, count, &position);
+        convertAngularToAxial(lidarData, count, &position,0);
         init_position_balise(lidarData,count, &position, &position_ennemie);
-        printf("\nx = %f / y = %f / teta = %f",position.x,position.y,position.teta);
-        printf("\n x_ennemie = %f / y_ennemie = %f",position_ennemie.x,position_ennemie.y);
+
+        printf("\n : x = %f / y = %f / teta = %f",position.x,position.y,position.teta);
+        printf(" /  x_ennemie = %f / y_ennemie = %f \n",position_ennemie.x,position_ennemie.y);
         
-        delay(500);
+        delay(1000);
     }
 
     lidarStop();
